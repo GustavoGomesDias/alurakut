@@ -35,6 +35,39 @@ export default function Home() {
     'juunegreiros', 'omariosouto', 'peas', 'rafaballerini', 'marcobrunodev', 'felipefialho'
   ];
 
+  const [seguidores, setSeguidores] = React.useState([]);
+  
+  React.useEffect(() => {
+    fetch('https://api.github.com/users/GustavoGomesDias/followers')
+    .then((response) => {
+      return response.json();
+    })
+    .then((responseJson) => {
+      setSeguidores(responseJson);
+    });
+  }, []); // <== O array diz quantas vezes executar.
+
+  function ProfileRelationsBox(props) {
+    return (
+      <ProfileRelationsBoxWrapper>
+        <h2 className="smallTitle">
+          {props.title} ({props.items.length || 0})
+        </h2>
+        <ul>
+          {/* {seguidores.map((item) => {
+            return (
+              <li key={item.id}>
+                <a href={`https://github.com/${item.login}.png`}>
+                  <img src={item.image} />
+                  <span>{item.title}</span>
+                </a>
+              </li>
+            )
+          })} */}
+        </ul>
+      </ProfileRelationsBoxWrapper>
+    );
+  }
 
   return (
     <>
@@ -57,14 +90,14 @@ export default function Home() {
             <form onSubmit={function handleCriaComunidade(event) {
               event.preventDefault();
               const dadosDoForm = new FormData(event.target);
-              
+
 
               const comunidade = {
                 id: new Date().toISOString(),
                 title: dadosDoForm.get('title'),
                 image: dadosDoForm.get('image'),
               };
-              
+
               const comunidadesAtualizadas = [
                 ...comunidades,
                 comunidade
@@ -96,9 +129,13 @@ export default function Home() {
         </div>
 
         <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
+          <ProfileRelationsBox
+            title="Seguidores"
+            items={seguidores}
+          />
           <ProfileRelationsBoxWrapper>
             <h2 className="smallTitle">
-              Comunidades ({comunidades.length})
+              Seguidores ({comunidades.length})
             </h2>
             <ul>
               {comunidades.map((item) => {
