@@ -1,4 +1,6 @@
 import React from 'react';
+import nookies from 'nookies';
+import jwt from 'jsonwebtoken';
 
 import MainGrid from '../src/components/MainGrid';
 import Box from '../src/components/Box';
@@ -23,10 +25,10 @@ function ProfileSidebar(props) {
   );
 }
 
-export default function Home() {
+export default function Home(props) {
   const [comunidades, setComunidades] = React.useState([]);
 
-  const githubUser = 'GustavoGomesDias';
+  const githubUser = props.githubUser;
   const favPeoples = [
     'juunegreiros', 'omariosouto', 'peas', 'rafaballerini', 'marcobrunodev', 'felipefialho'
   ];
@@ -34,7 +36,7 @@ export default function Home() {
   const [seguidores, setSeguidores] = React.useState([]);
 
   React.useEffect(() => {
-    fetch('https://api.github.com/users/GustavoGomesDias/followers')
+    fetch(`https://api.github.com/users/${githubUser}/followers`)
       .then((response) => {
         return response.json();
       })
@@ -53,7 +55,7 @@ export default function Home() {
       body: JSON.stringify({
         "query": `query {
         allCommunities {
-          ttile,
+          title,
           id,
           imageUrl,
           creatorSlug
@@ -62,8 +64,8 @@ export default function Home() {
     })
       .then((response) => response.json())
       .then((responseJson) => {
-        const dataCommunity = responseJson.data.allCommunities;
         console.log(responseJson);
+        const dataCommunity = responseJson.data.allCommunities;
         setComunidades(dataCommunity);
       });
   }, []); // <== O array diz quantas vezes executar.
@@ -205,4 +207,34 @@ export default function Home() {
       </MainGrid>
     </>
   );
+}
+
+export async function getServerSideProps(context) {
+  const cookies = nookies.get(context);
+
+  const token = cookies.USER_TOKEN;
+
+
+  const { isAuthenticated } = await fetch('https://alurakut.vercel.app/api/auth', {
+    headers: {
+      Authorization: token,
+    }
+  }).then((response) => response.json());
+
+  if (!isAuthenticated) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      }
+    }
+  }
+
+  const { githubUser } = jwt.decode(token);
+
+  return {
+    props: {
+      githubUser,
+    },
+  };
 }
