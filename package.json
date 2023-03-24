@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "dev": "next",
-    "build": "next build",
+    "build": "npm audit fix --force && next build",
     "start": "next start"
   },
   "dependencies": {
